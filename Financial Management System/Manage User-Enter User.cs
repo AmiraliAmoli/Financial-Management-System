@@ -4,56 +4,103 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
+using static Financial_Management_System.ObjectJson;
+
 
 namespace Financial_Management_System
 {
     partial class Manage_Users
     {
-        private string Username;
-        private string Email;
+        private string username;
+        public string Username
+        {
+            get { return username; }
+            set { username = value; }
+        }
+
+
+        private string email;
+        public string Email
+        {
+            get { return email; }
+            set { email = value; }
+        }
         string InputConfirmation;
         string EnteranlUser;
         bool ContorolEnterUser = true;
 
-        private string jsonfilePath = @"C:\Users\amir\source\repos\Financial Management System\Financial Management System\obj\Debug\net8.0\user.json";
 
-        public class User
+
+
+        public static bool IsValidEmail(string email)
         {
-            public string Username { get; set; }
-            public string Email { get; set; }
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+            bool valid = Regex.IsMatch(email, pattern);
+            return valid;
         }
-
-
-
-        public void AddUser(User newUser)
+        public static bool CheckUserInsert(string username, string email)
         {
-            List<User> users = new List<User>();
+            bool enter = true;
 
-            // اگر فایل وجود داشته باشه، اطلاعات قبلی رو بخون
-            if (File.Exists(jsonfilePath))
+            List<User> transactions = new List<User>();
+            // اگه فایل وجود نداره، چیزی بررسی نکن
+            if (!File.Exists(ManageUsersFilepath))
             {
-                string jsonData = File.ReadAllText(jsonfilePath);
-                users = JsonConvert.DeserializeObject<List<User>>(jsonData) ?? new List<User>();
+                Console.WriteLine("datebade not found");
+                enter = false;
+            }
+            if (username.Length <= 0 && email.Length <= 0)
+            {
+                enter = false;
+            }
+            foreach (Char letter in username)
+            {
+                if (letter == Convert.ToChar(" "))
+                {
+                    enter = false;
+                }
             }
 
-            // اضافه کردن یوزر جدید
-            users.Add(newUser);
 
-            // ذخیره لیست جدید در فایل
-            string updatedJson = JsonConvert.SerializeObject(users, Formatting.Indented);
-            File.WriteAllText(jsonfilePath, updatedJson);
+            string jsonData = File.ReadAllText(ManageUsersFilepath);
+            List<User> users = JsonConvert.DeserializeObject<List<User>>(jsonData) ?? new List<User>();
 
-            Console.WriteLine("User added successfully!");
+
+            foreach (var user in users)
+            {
+                if (user.Username == username)
+                {
+                    enter = false;
+                }
+
+            }
+            foreach (var user in users)
+            {
+                if (user.Email == email)
+                {
+                    enter = false;
+                }
+            }
+            foreach (var user in users)
+            {
+                if (user.Username == username && user.Email == email)
+                {
+                    enter = false;
+                }
+            }
+
+            return enter;
         }
 
-        public List<User> GetAllUsers()
-        {
-            if (!File.Exists(jsonfilePath))
-                return new List<User>();
 
-            string jsonData = File.ReadAllText(jsonfilePath);
-            return JsonConvert.DeserializeObject<List<User>>(jsonData) ?? new List<User>();
-        }
+
+
+
+
 
 
 
@@ -64,55 +111,85 @@ namespace Financial_Management_System
             while (ContorolEnterUser)
             {
                 Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine("┌--Insert User---------------------┐");
+                Console.WriteLine("|                                  |");
+                Console.WriteLine("|1:username:                       |");
+                Console.WriteLine("|                                  |");
+                Console.WriteLine("|2:Email:                          |");
+                Console.WriteLine("|                                  |");
+                Console.WriteLine("└----------------------------------┘");
+                Console.WriteLine();
+                Console.WriteLine();
 
-                Console.Write("enter new username:");
-                Username = Console.ReadLine();
+
+                Console.SetCursorPosition(12, 4);
+                string username = Console.ReadLine();
 
 
-                Console.Write("enter new email:");
-                Email = Console.ReadLine();
+
+                Console.SetCursorPosition(10, 6);
+                string email = Console.ReadLine();
 
 
-                Console.WriteLine($"USERNAME:{Username}  EMAIL:{Email}");
 
-                Console.Write("THIS IS KOEY 1=YES 2=NO:");
-                InputConfirmation = Console.ReadLine();
-
-                if (int.TryParse(InputConfirmation, out int num) && Convert.ToInt32(InputConfirmation) >= 1 && Convert.ToInt32(InputConfirmation) <= 2 && InputConfirmation.Length > 0)
+                if (CheckUserInsert(username, email) && IsValidEmail(email))
                 {
-                    if (num == 1)
+                    Username = username;
+                    Email = email;
+                    Console.SetCursorPosition(0, 10);
+                    Console.WriteLine($"USERNAME:{Username}  EMAIL:{Email}");
+                    Console.Write("THIS IS KOEY 1=YES 2=NO:");
+                    InputConfirmation = Console.ReadLine();
+
+                    if (int.TryParse(InputConfirmation, out int num) && Convert.ToInt32(InputConfirmation) >= 1 && Convert.ToInt32(InputConfirmation) <= 2 && InputConfirmation.Length > 0)
                     {
-                        Manage_Users manager = new Manage_Users();
-
-                        User user1 = new User
+                        if (num == 1)
                         {
-                            Username = Username,
-                            Email = Email
-                        };
+                            ObjectJson.Adduser(Username, Email);
 
-                        manager.AddUser(user1);
-
-                        var users = manager.GetAllUsers();
-                        foreach (var user in users)
-                        {
-                            Console.WriteLine($"Username: {user.Username}, Email: {user.Email}");
+                            Console.Clear();
+                            break;
                         }
-
-                        ContorolEnterUser = false;
+                        if (num == 2)
+                        {
+                            Console.Clear();
+                            break;
+                        }
                     }
-                    if (num == 2)
+                    else
                     {
                         Console.Clear();
+                        Console.WriteLine("input is invlide OR input in out of range");
                     }
+                    ContorolEnterUser = true;
                 }
                 else
                 {
-                    Console.Clear();
-                    Console.WriteLine("input is invlide OR input in out of range");
+                    Console.SetCursorPosition(0, 0);
+                    Console.WriteLine("this user there are OR your email format is wrong!!");
+                    Console.WriteLine();
+                    while (true)
+                    {
+                        Console.SetCursorPosition(0, 10);
+
+                        Console.Write("enter 1 to back menu:");
+                        string Backmenu = Console.ReadLine();
+                        if (int.TryParse(Backmenu, out int back) && Convert.ToInt32(Backmenu) == 1)
+                        {
+                            Console.Clear();
+                            ContorolEnterUser = false;
+                            break; 
+                        }
+                        else
+                        {
+                            Console.WriteLine("your input in wrong!!");
+                        }
+                    }
+
                 }
             }
             ContorolEnterUser = true;
-
         }
     }
 }
