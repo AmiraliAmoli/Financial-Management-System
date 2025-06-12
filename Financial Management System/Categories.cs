@@ -83,6 +83,7 @@ namespace Financial_Management_System
                 }
                 else
                 {
+                    Console.Clear();
                     Console.WriteLine("your input in null OR not string");
                 }
 
