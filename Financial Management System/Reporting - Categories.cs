@@ -100,7 +100,7 @@ namespace Financial_Management_System
                     }
                 }
                 amount = 0;
-                Avg = BigesAmount / 100;
+                Avg = BigesAmount / 10;
             }
 
             decimal CostInCat = 0;
