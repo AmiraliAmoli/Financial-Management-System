@@ -81,27 +81,58 @@ namespace Financial_Management_System
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.White;
 
-            double BigesAmount = Convert.ToDouble(transactions[0].Amount);
             double amount = 0;
             double Avg = 0;
             int LeftSpaceInChart = 11;
 
-            for (int i = 0; i < CategorisDatebase.Count; i++)
+           
+            //برای بدست اوردن بیشترین مجموع مقدار در دسته بندی ها من دوتا الگوریتم بدست آوردن
+
+            //الگوریتم اول
+            //double BigesAmount = Convert.ToDouble(transactions[0].Amount);
+
+            //for (int i = 0; i < CategorisDatebase.Count; i++)
+            //{
+            //    foreach (var item in transactions)
+            //    {
+            //        if (Categories[i] == item.Category)
+            //        {
+            //            amount = amount + Convert.ToDouble(item.Amount);
+            //            if (amount >= BigesAmount)
+            //            {
+            //                BigesAmount = amount;
+            //            }
+            //        }
+            //    }
+            //    amount = 0;
+            //    Avg = BigesAmount / 10;
+            //}
+
+
+
+
+            //الگوریتم دوم
+            double[] BigestAmount = new double[CategorisDatebase.Count];
+            double BigestAmountInArray =0;
+
+            int Q = 0;
+            foreach (var category in Categories)
             {
-                foreach (var item in transactions)
+                foreach (var transaction in transactions)
                 {
-                    if (Categories[i] == item.Category)
+                    if (transaction.Category == category)
                     {
-                        amount = amount + Convert.ToDouble(item.Amount);
-                        if (amount >= BigesAmount)
-                        {
-                            BigesAmount = amount ;
-                        }
+                        BigestAmount[Q] += Convert.ToDouble(transaction.Amount);
                     }
                 }
-                amount = 0;
-                Avg = BigesAmount / 10;
+                Q++;
+
             }
+
+            BigestAmountInArray = BigestAmount.Max();
+            Avg = BigestAmountInArray / 10;
+
+
 
             decimal CostInCat = 0;
             for (int i = 0; i < CategorisDatebase.Count; i++)
